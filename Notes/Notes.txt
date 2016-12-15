@@ -1,0 +1,136 @@
+Older,
+1. Created a Wiki class to hold urls for musicians just because
+
+2. Wrote and executed a script to populate MongoDB with the names of musicians from wikipedia
+
+3. Testing out scripts to connect and authenticate Spotify and Genius
+
+Nov 7,
+
+1. Muck around to write a script create a script that will run blobs of work concurrently
+    Step One
+      Pull an artist name from my database
+      Search for that artist through Spotify's API
+      Return the top result / musician and musician's Spotify ID
+      Hit Spotify's API to return JSON about that artist
+      Update the musician table with that JSON
+
+    Step Two
+      Hit Spotify's API for every song ID in our musician table
+      Return JSON about that song and insert into a song / track table
+
+    Step Three
+      https://bigishdata.com/2016/09/27/getting-song-lyrics-from-geniuss-api-scraping/
+      Hit Genius's API / Search for every song & artist combination
+      Return the top result / song and song ID
+      Hit Spotify's API / song  with the ID
+      Return JSON about that song and insert into a song / track table
+
+    Step Four
+      Hit / scrape the song lyrics webpage for every song in our song table
+      Find the HTML element that contains the lyrics
+      Update the song table with the lyrics
+
+Nov 8,
+
+Better script than Nov 7, 1.
+  Single process
+    . Pull a musician from MongoDB musician collection & set to variable
+    . Authenticate with Spotify
+    . Send musician name into spotify api '/search?type=artist' end point
+    . Take top artist response from api call
+        . Update MongoDB musician collection with response JSON
+        . Set spotify artist id from response to a variable
+    . Send spotify artist id to spotify api '/v1/artist/{id}/albums' end point
+    . Take all albums in response from api call
+        . Insert response JSON into MongoDB album collection
+        . Set spotify album ids from response to a list variable
+    . For every album in the list
+        . Send spotify album id to spotify api '/v1/album/{id}/tracks' end point
+        . Take all tracks in response from api call
+            . Insert response JSON into MongoDB song collection
+            . Set spotify track ids from response to a list variable
+        . for every song in the list
+            . Send spotify track id to spotify api '/v1/audio-features/{id}' end point
+            . Update MongoDB song collection with response JSON
+
+Rate Limiting Notes
+  Check Status Code
+  " If you get status code 429, it means that you have sent too many requests.
+    If this happens, have a look in the Retry-After header, where you will see a number displayed.
+    This is the amount of seconds that you need to wait, before you can retry sending your requests."
+
+Nov, 9
+
+Rate limiting didn't end up being a problem. The Spotipy package I'm using handles the rate limiting appropriately
+
+Wrote script for Nov, 8 that will gather Spotify data for every artist. I've changed my laptop settings stay awake all night.
+I plan to run let it run tonight. Gathering all songs for my
+
+Nov, 10
+
+There were timeout bugs for my mongo client and spotify client credentials so the script was interrupted a few times
+About half of the musicians have data gathered from spotify
+
+while this script continues to run I will finalize a script to scrape lyrics
+
+I made some great headway with my lyric gathering script, however I hit another snag.
+
+I need to hit genius's api for at least 300,000 songs. There is no definitive rate limit that I can sleep
+for the end point I'm hitting, and they don't give a clear way to handle when you hit it.
+
+The limit I've seen in the support forums is about 10 hits per minute (for upvotes). If I
+hit the api at this rate sequentially, it would take 20 days.
+
+Although, I've been avoiding it, I think this means I should be using multiple servers
+to gather the data more quickly.
+
+I'll also have to create several client apps for each virtual machine
+
+Nov, 11
+
+Miles slapped me in the face with some knowledge so now I'm attempting to use tor
+  to web scrape from several IP addresses
+  /usr/local/etc/tor/torrc
+  sudo killall tor
+  /usr/local
+  tor
+  I can't resolve a General sockets error I'm receiving when I try try to switch IP's programmatically
+  using the stem.Controller. Grier has that on lock but I can't recreate it.
+  To move things along I'm just going to start making requests.
+
+Nov, 14
+
+  gathering the lyrics anonymously was causing problems so I've bailed on it.
+
+  My hit rate is at about 14% right now.
+
+  I think this may be due to the fact that I'm choosing my songs randomly. Rap Genius might not have lyrics for
+  more obscure songs / hip hop musicians
+
+  If this is true i may be better off scraping the songs of the top few 100 spotify artists to increase my hit rate
+
+Nov, 15
+
+  created a dev database to start modeling while the lyrics script searches for lyrics
+
+  for modeling, I used NMF on the TF-IDF vectors of all songs of an artist. I then took
+  the matrix of "artists to topics" and assigned the artist to their top topic
+
+  There were several problems along the way
+
+  The groups seem to primarily reveal language differences so I'll need to account
+  for that down the line
+
+  hip hop likely has it own evolving set of stop words I haven't accounted for
+
+Nov, 16
+
+  still web scraping. 30% of the way done
+
+  started playing around with D3
+
+  got a D3 force layout template working locally, now I just need to tie real data to it
+
+  looks like to read files into my browser I need to set up a local server. Looks
+  it is time to set up flask!!!

@@ -1,0 +1,2 @@
+artists_url,https://en.wikipedia.org/wiki/List_of_hip_hop_musicians
+groups_url,https://en.wikipedia.org/wiki/List_of_hip_hop_groups
